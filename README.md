@@ -17,8 +17,6 @@ This project uses transfer learning with ResNet50 to classify images from the Ca
 - 📦 Uses **Caltech-256 dataset (~30K images, 256 classes)**
 - 🧠 Transfer learning with **ResNet50**
 - 🎯 Achieves ~70% accuracy
-- 🔄 Data augmentation for better generalization
-- ⚡ Runs on **Apple Silicon (MPS GPU)** or CPU
 - 🖼️ Image prediction (mini Google Lens-style)
 
 ---
