@@ -34,6 +34,7 @@ This project uses transfer learning with ResNet50 to classify images from the Ca
 ---
 
 ## 📁 Project Structure
+```
 project/
 │
 ├── dataset/
@@ -44,7 +45,7 @@ project/
 ├── train.py
 ├── predict.py
 └── README.md
-
+```
 ---
 
 ## ⚙️ Setup Instructions
@@ -54,3 +55,4 @@ project/
 ```bash
 git clone https://github.com/your-username/mini-google-lens.git
 cd mini-google-lens
+```
