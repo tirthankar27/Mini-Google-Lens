@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mini Google Lens Result</title>
+</head>
+<body>
+
+    <h1>Mini Google Lens</h1>
+    <img src="{{ image_path }}" width="300">
+    <h2>Detected Object</h2>
+
+    <h3>{{ prediction.class }}</h3>
+
+    <h3>Confidence: {{ prediction.confidence }}%</h3>
+
+    <h2>Top 5 Predictions</h2>
+
+    <ul>
+        {% for item in top5 %}
+            <li>
+                {{ item.class }} - {{ item.confidence }}%
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Similar Images</h2>
+
+    {% for img in similar_images %}
+
+        <img
+            src="{{ img }}"
+            width="200"
+            style="margin:10px;"
+        >
+
+    {% endfor %}
+
+    <br>
+
+    <a href="/">Upload Another Image</a>
+
+</body>
+</html>
