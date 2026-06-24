@@ -4,7 +4,3 @@
 # Dataset
 dataset/
 256_ObjectCategories/
-
-# Generated files
-embeddings.npy
-image_paths.pkl
