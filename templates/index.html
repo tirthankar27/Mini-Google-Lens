@@ -1,22 +1,385 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Mini Google Lens</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Lens - Search What You See</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
+        
+        * {
+            font-family: 'Google Sans', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #202124;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lens-container {
+            width: 100%;
+            max-width: 680px;
+            padding: 20px;
+        }
+
+        .lens-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .lens-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .lens-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #4285f4, #34a853, #fbbc04, #ea4335);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .lens-title {
+            font-size: 32px;
+            font-weight: 500;
+            color: #e8eaed;
+            letter-spacing: -0.5px;
+        }
+
+        .lens-subtitle {
+            color: #9aa0a6;
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .upload-card {
+            background: #303134;
+            border: 1px solid #5f6368;
+            border-radius: 16px;
+            padding: 40px 32px;
+            transition: all 0.2s ease;
+        }
+
+        .upload-card:hover {
+            border-color: #8ab4f8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .upload-area {
+            border: 2px dashed #5f6368;
+            border-radius: 12px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            position: relative;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: #8ab4f8;
+            background: rgba(138, 180, 248, 0.04);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #8ab4f8;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            color: #e8eaed;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: #9aa0a6;
+            font-size: 14px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .preview-container {
+            display: none;
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .btn-analyze {
+            background: #8ab4f8;
+            color: #202124;
+            border: none;
+            border-radius: 24px;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            transition: all 0.2s ease;
+            display: none;
+            margin: 24px auto 0;
+        }
+
+        .btn-analyze:hover {
+            background: #aecbfa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-analyze:active {
+            background: #669df6;
+            transform: translateY(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #9aa0a6;
+            font-size: 14px;
+            margin: 24px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #5f6368;
+        }
+
+        .divider span {
+            padding: 0 16px;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .url-input {
+            background: transparent;
+            border: 1px solid #5f6368;
+            border-radius: 24px;
+            padding: 12px 20px;
+            color: #e8eaed;
+            font-size: 14px;
+            flex: 1;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .url-input:focus {
+            border-color: #8ab4f8;
+            box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2);
+        }
+
+        .url-input::placeholder {
+            color: #9aa0a6;
+        }
+
+        .btn-url {
+            background: transparent;
+            border: 1px solid #5f6368;
+            color: #8ab4f8;
+            border-radius: 24px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-url:hover {
+            background: rgba(138, 180, 248, 0.08);
+            border-color: #8ab4f8;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .feature-item {
+            text-align: center;
+            color: #9aa0a6;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            color: #8ab4f8;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 576px) {
+            .upload-card {
+                padding: 24px 20px;
+            }
+            
+            .url-input-group {
+                flex-direction: column;
+            }
+            
+            .btn-url {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="lens-container">
+        <div class="lens-header">
+            <div class="lens-logo">
+                <div class="lens-icon">
+                    <i class="bi bi-camera"></i>
+                </div>
+                <h1 class="lens-title">Google Lens</h1>
+            </div>
+            <p class="lens-subtitle">Search what you see. Identify objects, translate text,<br>find similar items, and more.</p>
+        </div>
 
-    <h1>Mini Google Lens</h1>
+        <div class="upload-card">
+            <form action="/predict" method="post" enctype="multipart/form-data" id="uploadForm">
+                <div class="upload-area" id="uploadArea">
+                    <i class="bi bi-image upload-icon"></i>
+                    <div class="upload-text">Drag an image here or click to upload</div>
+                    <div class="upload-hint">Supports JPG, PNG, WEBP • Max 10MB</div>
+                    <input type="file" name="file" class="file-input" id="fileInput" accept="image/*" required>
+                </div>
 
-    <form action="/predict" method="post"
-          enctype="multipart/form-data">
+                <div class="preview-container" id="previewContainer">
+                    <img src="" alt="Preview" class="preview-image" id="previewImage">
+                </div>
 
-        <input type="file" name="file">
+                <button type="submit" class="btn-analyze" id="analyzeBtn">
+                    <i class="bi bi-search"></i> Analyze Image
+                </button>
+            </form>
 
-        <button type="submit">
-            Upload
-        </button>
+            <div class="divider">
+                <span>or paste image URL</span>
+            </div>
 
-    </form>
+            <div class="url-input-group">
+                <input type="url" class="url-input" placeholder="Paste image link here" id="urlInput">
+                <button type="button" class="btn-url" id="urlBtn">
+                    <i class="bi bi-link-45deg"></i> Search
+                </button>
+            </div>
+        </div>
 
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon"><i class="bi bi-translate"></i></div>
+                <div>Translate text in images</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="bi bi-search"></i></div>
+                <div>Identify objects & landmarks</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="bi bi-cart"></i></div>
+                <div>Find similar products</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="bi bi-fonts"></i></div>
+                <div>Extract text from images</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const urlInput = document.getElementById('urlInput');
+        const urlBtn = document.getElementById('urlBtn');
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                fileInput.files = files;
+                handleFileSelect(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+                analyzeBtn.style.display = 'block';
+                uploadArea.querySelector('.upload-text').textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // URL search
+        urlBtn.addEventListener('click', () => {
+            const url = urlInput.value.trim();
+            if (url) {
+                // Handle URL search
+                window.location.href = `/predict?url=${encodeURIComponent(url)}`;
+            }
+        });
+
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                urlBtn.click();
+            }
+        });
+    </script>
 </body>
 </html>
