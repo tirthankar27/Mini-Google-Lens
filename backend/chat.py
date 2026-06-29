@@ -1,5 +1,7 @@
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
+import json
+import re
 
 print("Loading Qwen...")
 
@@ -90,3 +92,116 @@ User Question:
     )
 
     return response.strip()
+
+def analyze_image(scene=None, caption="", ocr_text=""):
+
+    prompt = """
+You are an expert computer vision assistant.
+
+You receive outputs from multiple AI vision models.
+
+Rules:
+
+1. OCR is ALWAYS the most reliable for documents.
+
+2. BLIP Caption is ALWAYS the most reliable description of an object.
+
+3. OpenCLIP only gives coarse scene understanding and may be wrong.
+
+4. If BLIP identifies a specific object
+(for example Apple iPhone, Samsung Galaxy,
+Toyota Fortuner, Nike Shoes,
+MacBook Air, Coca Cola Bottle etc.)
+IGNORE the OpenCLIP prediction completely.
+
+Return ONLY valid JSON.
+
+Format:
+
+{
+    "object":"",
+    "category":"",
+    "search_query":"",
+    "summary":""
+}
+"""
+
+    if scene:
+        prompt += f"""
+    OpenCLIP Scene:
+    {scene}
+    """
+        prompt += f"""
+        BLIP Caption:
+        {caption}
+
+        OCR Text:
+        {ocr_text}
+        """
+
+    messages = [
+        {
+            "role": "system",
+            "content": "You return JSON only."
+        },
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ]
+
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+
+    inputs = tokenizer(
+        text,
+        return_tensors="pt"
+    ).to(device)
+
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=180,
+        do_sample=False,
+    )
+
+    response = tokenizer.decode(
+        outputs[0][inputs.input_ids.shape[1]:],
+        skip_special_tokens=True
+    )
+
+    try:
+        match = re.search(
+            r"\{.*\}",
+            response,
+            re.DOTALL
+        )
+
+        if match:
+            data = json.loads(match.group())
+
+            if not data.get("object"):
+                data["object"] = caption
+
+            if not data.get("category"):
+                data["category"] = "unknown"
+
+            if not data.get("search_query"):
+                data["search_query"] = caption
+
+            if not data.get("summary"):
+                data["summary"] = caption
+
+            return data
+
+    except Exception:
+        pass
+
+    return {
+        "object": caption,
+        "category": "unknown",
+        "search_query": caption,
+        "summary": caption
+    }

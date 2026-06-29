@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap');
-        
+
         * {
             font-family: 'Google Sans', 'Segoe UI', sans-serif;
         }
@@ -98,7 +99,7 @@
 
         .card-dark:hover {
             border-color: #8ab4f8;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .card-full {
@@ -125,7 +126,7 @@
         .uploaded-img {
             width: 100%;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .prediction-main {
@@ -258,7 +259,7 @@
         .similar-img:hover {
             border-color: #8ab4f8;
             transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
         .top-predictions {
@@ -316,11 +317,11 @@
             .main-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .lens-header {
                 flex-wrap: wrap;
             }
-            
+
             .btn-back {
                 margin-left: 0;
                 width: 100%;
@@ -334,6 +335,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="lens-container">
         <!-- Header -->
@@ -351,19 +353,19 @@
 
         <!-- Main Content Grid -->
         <div class="main-grid">
-            
+
             <!-- Uploaded Image -->
             <div class="card-dark">
                 <div class="section-label">
                     <i class="bi bi-image"></i> Your Image
                 </div>
                 <img src="{{ image_path }}" alt="Uploaded image" class="uploaded-img">
-                
+
                 {% if ocr_text and ocr_text|length > 0 %}
                 <div class="mode-badge" style="margin-top: 16px;">
                     <i class="bi bi-file-text"></i> Document Mode
                 </div>
-                {% elif prediction %}
+                {% elif primary_prediction %}
                 <div class="mode-badge" style="margin-top: 16px;">
                     <i class="bi bi-box"></i> Object Mode
                 </div>
@@ -375,7 +377,7 @@
                 <div class="section-label">
                     <i class="bi bi-cpu"></i> OpenCLIP Analysis
                 </div>
-                
+
                 <!-- Scene Labels Table -->
                 <table class="scene-table">
                     <thead>
@@ -397,15 +399,15 @@
                 </table>
 
                 <!-- Main Prediction -->
-                {% if prediction %}
-                <div class="prediction-main">{{ prediction.class }}</div>
+                {% if primary_prediction %}
+                <div class="prediction-main">{{ primary_prediction.class }}</div>
                 <div class="progress">
-                    <div class="progress-bar bg-success" style="width: {{ prediction.confidence }}%;">
-                        {{ prediction.confidence }}%
+                    <div class="progress-bar bg-success" style="width: {{ primary_prediction.confidence }}%;">
+                        {{ primary_prediction.confidence }}%
                     </div>
                 </div>
                 {% else %}
-                <div class="prediction-main">{{ scene[0].label.title() if scene else 'Analyzing...' }}</div>
+                <div class="prediction-main">{{ primary_prediction.class if scene else 'Analyzing...' }}</div>
                 <div class="progress">
                     <div class="progress-bar" style="width: {{ scene[0].confidence if scene else 0 }}%;">
                         {{ scene[0].confidence if scene else 0 }}%
@@ -439,29 +441,49 @@
             </div>
 
             <!-- Additional Info -->
-            {% if info %}
+
             <div class="card-dark">
+
                 <div class="section-label">
-                    <i class="bi bi-info-circle"></i> Classification Details
+                    <i class="bi bi-stars"></i>
+                    AI Understanding
                 </div>
+
                 <div class="info-row">
+
                     <div class="info-item">
-                        <div class="info-label">Category</div>
-                        <div class="info-value">{{ info.category }}</div>
+                        <div class="info-label">
+                            Object
+                        </div>
+
+                        <div class="info-value">
+                            {{ ai_info.object }}
+                        </div>
                     </div>
+
                     <div class="info-item">
-                        <div class="info-label">Description</div>
-                        <div class="info-value">{{ info.description }}</div>
+                        <div class="info-label">
+                            Category
+                        </div>
+
+                        <div class="info-value">
+                            {{ ai_info.category }}
+                        </div>
                     </div>
+
                 </div>
+
+                <hr>
+
+                <p>{{ ai_info.summary }}</p>
+
             </div>
-            {% endif %}
 
             <!-- Top Predictions -->
             {% if top5 %}
             <div class="card-dark card-full">
                 <div class="section-label">
-                    <i class="bi bi-trophy"></i> Top Predictions
+                    <i class="bi bi-trophy"></i> Baseline CNN (Caltech-256)
                 </div>
                 <div class="top-predictions">
                     {% for item in top5 %}
@@ -481,19 +503,106 @@
 
             <!-- Similar Images -->
             {% if similar_images %}
-            <div class="card-dark card-full">
-                <div class="section-label">
-                    <i class="bi bi-grid-3x3-gap"></i> Similar Images
-                </div>
-                <div class="similar-grid">
-                    {% for img in similar_images %}
-                    <img src="{{ img }}" alt="Similar image" class="similar-img">
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
+<div class="card-dark card-full">
 
+    <div class="section-label">
+        <i class="bi bi-grid-3x3-gap"></i>
+        Dataset Similar Images
+    </div>
+
+    <div class="similar-grid">
+
+        {% for img in similar_images %}
+
+        <img src="{{ img }}" class="similar-img">
+
+        {% endfor %}
+
+    </div>
+
+</div>
+{% endif %}
+
+
+{% if web_images %}
+<div class="card-dark card-full">
+
+    <div class="section-label">
+        <i class="bi bi-globe"></i>
+        Similar Images from the Web
+    </div>
+
+    <div class="similar-grid">
+
+        {% for img in web_images %}
+
+        <img
+            src="{{ img }}"
+            class="similar-img"
+            loading="lazy"
+        >
+
+        {% endfor %}
+
+    </div>
+
+</div>
+{% endif %}
+
+
+{% if shopping %}
+<div class="card-dark card-full">
+
+    <div class="section-label">
+        <i class="bi bi-cart"></i>
+        Explore Similar Products
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-4">
+
+            <a
+                href="{{ shopping.amazon }}"
+                target="_blank"
+                class="btn btn-warning w-100"
+            >
+                Amazon
+            </a>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <a
+                href="{{ shopping.flipkart }}"
+                target="_blank"
+                class="btn btn-primary w-100"
+            >
+                Flipkart
+            </a>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <a
+                href="{{ shopping.google }}"
+                target="_blank"
+                class="btn btn-success w-100"
+            >
+                Google
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+{% endif %}
+            </div>
         </div>
     </div>
 </body>
+
 </html>

@@ -283,7 +283,37 @@
                     <i class="bi bi-search"></i> Analyze Image
                 </button>
             </form>
+            <div class="card-dark mt-4">
 
+    <div class="section-label">
+        <i class="bi bi-search"></i>
+        Search by Description
+    </div>
+
+    <form action="/search" method="post">
+
+        <div class="input-group">
+
+            <input
+                class="form-control"
+                type="text"
+                name="query"
+                placeholder="e.g. golden retriever, red flower, bicycle..."
+                required
+            >
+
+            <button
+                class="btn btn-primary"
+                type="submit"
+            >
+                Search
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
             <div class="divider">
                 <span>or paste image URL</span>
             </div>
