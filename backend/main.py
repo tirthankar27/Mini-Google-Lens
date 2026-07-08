@@ -16,6 +16,7 @@ from backend.chat import analyze_image, ask_ai
 from backend.web_search import search_web_images
 from backend.shopping import shopping_links
 from backend.category import detect_category
+from backend.localization import localize_object
 
 app = FastAPI()
 
@@ -60,6 +61,7 @@ async def predict(
     ai_info = None
     shopping = None
     web_images = []
+    boxed_image = "/" + file_path
 
     DOCUMENT_KEYWORDS = [
         "document",
@@ -89,6 +91,7 @@ async def predict(
             "class": ai_info["object"],
             "confidence": round(scene[0]["confidence"], 2)
         }
+    
         search_query = ai_info.get("search_query", "")
 
         if not search_query or not search_query.strip():
@@ -125,6 +128,11 @@ async def predict(
             "class": ai_info["object"],
             "confidence": round(scene[0]["confidence"], 2)
         }
+        boxed_image = localize_object(
+            image=image,
+            label=ai_info["category"],
+            save_path=file_path
+        )
         search_query = ai_info.get("search_query", "")
 
         if not search_query or not search_query.strip():
@@ -172,7 +180,7 @@ async def predict(
             "caption": caption,
             "ocr_text": ocr_text,
             "similar_images": similar,
-            "image_path": "/" + file_path,
+            "image_path": boxed_image,
             "info": info,
             "web_images": web_images,
             "ai_info": ai_info,
